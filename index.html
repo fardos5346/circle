@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>קסם העיגול והמעגל</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #2b2d42;
+            --success: #2ec4b6;
+            --error: #e71d36;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .lang-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            background-color: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .lang-btn.active, .lang-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .content-section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        .ltr {
+            direction: ltr;
+            text-align: left;
+        }
+
+        h2 {
+            color: var(--secondary);
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 10px;
+        }
+
+        .formula-box {
+            background-color: #f7f9fc;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        
+        .rtl .formula-box {
+            border-left: none;
+            border-right: 5px solid var(--primary);
+        }
+
+        .quiz-container {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .question-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .question-card.advanced {
+            border-left: 5px solid #ff9f1c;
+        }
+        .rtl .question-card.advanced {
+            border-left: none;
+            border-right: 5px solid #ff9f1c;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            background: #ff9f1c;
+            color: white;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            width: 140px;
+            padding: 6px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            margin: 5px;
+            font-size: 1rem;
+        }
+
+        input[type="text"]:disabled {
+            background-color: #e9ecef;
+            color: #495057;
+            cursor: not-allowed;
+        }
+
+        button.action-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button.action-btn:hover:not(:disabled) {
+            background-color: var(--primary);
+        }
+
+        button.action-btn:disabled {
+            background-color: #ced4da;
+            cursor: not-allowed;
+        }
+
+        .feedback-box {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .feedback-box.correct {
+            display: block;
+            background-color: #e8f8f5;
+            color: #117a65;
+            border: 1px solid #a3e4d7;
+        }
+
+        .feedback-box.incorrect {
+            display: block;
+            background-color: #fdebd0;
+            color: #b03a2e;
+            border: 1px solid #f5cba7;
+        }
+
+        #score-summary {
+            margin-top: 25px;
+            padding: 20px;
+            background: #eef1f6;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="lang-switcher">
+        <button class="lang-btn" id="btn-en" onclick="switchLang('en')">English</button>
+        <button class="lang-btn" id="btn-he" onclick="switchLang('he')">עברית</button>
+        <button class="lang-btn" id="btn-ar" onclick="switchLang('ar')">العربية</button>
+        <button class="lang-btn" id="btn-ru" onclick="switchLang('ru')">Русский</button>
+    </div>
+
+    <header>
+        <h1 id="main-title">קסם העיגול והמעגל</h1>
+        <p id="main-subtitle">מגלים את السודות של העולם העגול!</p>
+    </header>
+
+    <div id="content-area"></div>
+
+    <div class="quiz-container">
+        <h2 id="quiz-title">בחן את הידע שלך!</h2>
+        <p id="quiz-intro">אין צורך במחשבונים! ברגע שתבדקו את התשובה השאלה תינעל, אז חשבו היטב!</p>
+        
+        <div id="quiz-questions"></div>
+
+        <button class="action-btn" id="btn-check-all" onclick="checkAll()">Check All Questions</button>
+        <div id="score-summary"></div>
+    </div>
+</div>
+
+<script>
+    const data = {
+        en: {
+            dir: 'ltr',
+            title: "The Magic of Circles",
+            subtitle: "Unlocking the secrets of the round world!",
+            quizTitle: "Test Your Knowledge!",
+            quizIntro: "No calculators allowed! Once you check your answer, it will lock, so think carefully!",
+            checkBtn: "Check Answer",
+            checkAllBtn: "Check All Questions & Lock",
+            scoreMsg: "🎉 Quiz Completed! Your Score: ",
+            advBadge: "Advanced Algebra Challenge",
+            historyTitle: "📜 History & The Wheel",
+            historyBody: "Long ago, early humans realized pulling heavy things on flat ground was hard. Around 3500 BCE, people in Mesopotamia carved the very first wooden wheel. Suddenly, moving items across land became fast and easy! This simple shape completely changed human history, allowing empires to build massive structures and trade across continents.",
+            motivationTitle: "🚀 Why You Should Master Circles!",
+            motivationBody: "Circles are the ultimate superpower shapes! Nature loves them because they are perfectly balanced. Video game designers use circle math to calculate explosions and make characters jump smoothly. Rocket scientists use circle math to launch satellites into perfect orbits around Earth. When you master circles, you learn the secret code that builds games, wheels, and spaceships!",
+            piTitle: "🥧 How Do We Get Pi (π)?",
+            piBody: "Imagine you take any circular object, like a coin or a bicycle wheel. If you wrap a piece of string perfectly around the outside edge (the Circumference), and then cut it, you can lay that string flat to measure it. Next, measure a straight line straight across the center of that same circle (the Diameter). If you check how many times the short diameter string fits into the long circumference string, the answer is ALWAYS the same: a little bit more than 3 times! To be exact, it is about 3.14159... We call this magic constant number Pi (π). Note: Remember it's written 'Pi', not 'Pie' like the dessert!",
+            formulasTitle: "📐 The Formulas",
+            formulasBody: "Let <b>r</b> be the Radius (center to edge), and <b>d</b> be the Diameter (all the way across, so d = 2r):",
+            formCirc: "Circumference (Distance around): C = 2 × π × r  (or  C = π × d)",
+            formArea: "Area (Space inside): A = π × r²",
+            correctPrefix: "🎉 Correct! ",
+            incorrectPrefix: "❌ Not quite. ",
+            lowScoreFeedback: "Don't worry! Read the text above and try again to improve your score.",
+            midScoreFeedback: "Good effort! Review the rules of Pi and diameter to get an even better score next time.",
+            highScoreFeedback: "Excellent! You are a true Master of Circles!",
+            questions: [
+                { q: "If a circle has a radius of 4 cm, what is its diameter?", a: "8", exp: "Since Diameter is twice the radius (d = 2 × r), we calculate 2 × 4 = 8 cm." },
+                { q: "If a circle's diameter is 14 meters, what is its radius?", a: "7", exp: "The radius is half of the diameter (r = d / 2). So, 14 / 2 = 7 meters." },
+                { q: "How many times bigger is a circle's diameter compared to its radius?", a: "2", exp: "A diameter goes all the way across the circle through the center, making it exactly 2 times the length of a radius." },
+                { q: "Write the symbol/name used for the mathematical ratio 3.14...", a: "pi", exp: "The correct term is 'pi' (named after the Greek letter π). Remember, 'pie' is the tasty dessert!" },
+                { q: "What is the perimeter of a circle called?", a: "circumference", exp: "The boundary line or perimeter of any circular shape is uniquely named the circumference." },
+                { q: "If a circle has a diameter of 10 cm, what is its circumference in terms of π? (Example format: 5pi)", a: "10pi", exp: "The formula is C = π × d. Since d = 10, the total circumference is 10pi." },
+                { q: "If a circle has a radius of 3 cm, what is its area in terms of π? (Example format: 12pi)", a: "9pi", exp: "The formula for area is A = π × r². Since r = 3, r² is 3 × 3 = 9. So the answer is 9pi." },
+                { q: "If the circumference of a circle is 20π meters, what is its diameter?", a: "20", exp: "Using C = π × d, if C = 20π, then the diameter d must equal 20." },
+                { q: "If the circumference of a circle is 16π cm, what is its radius?", a: "8", exp: "Since C = 2 × π × r, we can see that 2 × r = 16. Dividing by 2 gives us a radius of 8." },
+                { q: "True or False: A large pizza wheel and a tiny coin have the exact same value for Pi.", a: "true", type: "basic", exp: "True! Pi is an unchanging universal ratio. Every single circle in existence shares the exact same value for Pi." },
+                { q: "Advanced: If a circle's radius is expressed as 3x, what is its diameter expression? (Example format: 2x)", a: "6x", type: "advanced", exp: "Diameter is always 2 times the radius. So 2 × 3x = 6x." },
+                { q: "Advanced: If a circle's radius is 2x and its circumference is 12π, what is the value of x?", a: "3", type: "advanced", exp: "Circumference is 2 × π × r. Substituting r = 2x gives 2 × π × 2x = 4xπ. Setting 4xπ = 12π means 4x = 12, so x = 3." },
+                { q: "Advanced: A square has side length 2x. A circle is placed inside, touching all four edges perfectly. Write the radius of this circle in terms of x.", a: "x", type: "advanced", exp: "The width of the square is 2x, which matches the diameter of the inside circle. Since radius is half the diameter, half of 2x is x." },
+                { q: "Advanced: The area of a circle is 49π. What is its circumference in terms of π? (Example format: 5pi)", a: "14pi", type: "advanced", exp: "Since A = π × r² = 49π, r² must be 49, making the radius r = 7. Plugging r into C = 2 × π × r gives 2 × 7 × π = 14pi." },
+                { q: "Advanced: If Area divided by Circumference equals 5 for a specific circle, what is its radius?", a: "10", type: "advanced", exp: "Area / Circumference can be written as (π × r²) / (2 × π × r), which simplifies to r / 2. If r / 2 = 5, then multiplying by 2 gives r = 10." },
+                { q: "Advanced: A circle's radius increases from r to r + 3. By how much does its circumference increase? (Give answer in terms of π, Example format: 2pi)", a: "6pi", type: "advanced", exp: "The old circumference is 2πr. The new circumference is 2π(r + 3) = 2πr + 6π. The increase is exactly 6pi." },
+                { q: "Advanced: If the area of a circle is numerically equal to its circumference, what is its radius?", a: "2", type: "advanced", exp: "Setting π × r² = 2 × π × r allows us to divide both sides by π × r (assuming r isn't 0), leaving us with r = 2." },
+                { q: "Advanced: If a circle's diameter expression is 4x - 6, what is its radius expression? (Example format: 5x-2)", a: "2x-3", type: "advanced", exp: "The radius is half the diameter. We divide both terms by 2: (4x / 2) - (6 / 2) = 2x - 3." },
+                { q: "Advanced: A pathway of width 2 surrounds a pond of radius r. What is the outer circle's radius?", a: "r+2", type: "advanced", exp: "The radius starts at the center and goes across the pond (r) plus across the path (2), totaling r + 2." },
+                { q: "Advanced: If a circle's area is 64π, what is its diameter?", a: "16", type: "advanced", exp: "Area is 64π, meaning r² = 64, so the radius r = 8. Since diameter is twice the radius, 2 × 8 = 16." }
+            ]
+        },
+        he: {
+            dir: 'rtl',
+            title: "קסם העיגול והמעגל",
+            subtitle: "מגלים את הסודות של העולם העגול!",
+            quizTitle: "בחן את הידע שלך!",
+            quizIntro: "אין צורך במחשבונים! ברגע שתבדקו את התשובה השאלה תינעל, אז חשבו היטב!",
+            checkBtn: "בדוק תשובה",
+            checkAllBtn: "בדוק את כל התשובות ונעל",
+            scoreMsg: "🎉 המשימה הושלמה! הציון שלך: ",
+            advBadge: "אתגר אלגברה לחטיבה",
+            historyTitle: "📜 היסטוריה והמצאת הגлגל",
+            historyBody: "לפני זמן רב, בני האדם הבינו שלגרור דברים כבדים על האדמה זה קשה מאוד. בסביבות שנת 3500 לפני הספירה, אנשים במסופוטמיה המציאו את גлגל העץ הראשון. פתאום, העברת חפצים ממקום למקום הפכה למהירה וקله! הצורה הפשוטה הזו שינתה לחלוטין את ההיסטוריה האנושית.",
+            motivationTitle: "🚀 למה כדאי לכם להיות אלופי המעגלים?",
+            motivationBody: "עיגולים ומעגלים הם צורות עם כוחות על! מעצבי משחקי מחשב משתמשים במתמטיקה של מעגלים כדי לחשב פיצוצים ולגרום לדמויות לקפוץ חלק. מדעני טילים משתמשים בה כדי לשגר לוויינים למסלול סביב כדור הארץ.",
+            piTitle: "🥧 איך אנחנו מגלים את פאי (π)?",
+            piBody: "תארו לעצמכם שאתם לוקחים חפץ עגול, כמו מטבע או גлגל אופניים. אם תקחו חוט ותקיפו איתו במדויק את הקצה החיצוני (ההיקף), ואז תגזרו ותפרסו אותו ישר - תוכלו למדוד את אורכו. כעת, קחו חוט ומדדו קו ישר שעובר בדיוק במרכז המעגל מצד לצד (הקוטר). אם תבדקו כמה פעמים חוט הקוטר הקצר נכנס בתוך חוט ההיקף הארוך, התשובה תמיד תהיה זהה: קצת יותר מ-3 פעמים! ליתר דיוק, בערך 3.14159... למספר הקסם הקבוע הזה אנחנו קוראים פאי (π). שימו לב שבאנגלית כותבים Pi ולא Pie (עוגה)!",
+            formulasTitle: "📐 הנוסחאות",
+            formulasBody: "נסמן ב-<b>r</b> את הרדיוס (מהמרכז לקצה), וב-<b>d</b> את הקוטר (מצד לצד, כלומר d = 2r):",
+            formCirc: "היקף המעגל (המרחק מסביב): C = 2 × π × r  (או  C = π × d)",
+            formArea: "שטח העיגול (המקום בפנים): A = π × r²",
+            correctPrefix: "🎉 נכון מאוד! ",
+            incorrectPrefix: "❌ לא מדויק. ",
+            lowScoreFeedback: "לא נורא! כדאי לקרוא שוב את חומר ההסבר למעלה ולנסות שוב כדי להשתפר.",
+            midScoreFeedback: "ניסיון יפה! כדאי לחזור על חוקי הפאי והקוטר כדי לקבל ציון גבוה עוד יותר בפעם הבאה.",
+            highScoreFeedback: "מצוין! אלוף המעגלים האמיתי!",
+            questions: [
+                { q: "אם לרדיוס מעגל יש אורך של 4 ס\"מ, מהו הקוטר שלו?", a: "8", exp: "הקוטר הוא תמיד כפול מהרדיוס (d = 2 × r), לכן: 2 × 4 = 8 ס\"מ." },
+                { q: "אם קוטר המעגל הוא 14 מטרים, מהו הרדיוס שלו?", a: "7", exp: "הרדיוס הוא חצי מהקוטר (r = d / 2). לכן: 14 / 2 = 7 מטרים." },
+                { q: "פי כמה גדול קוטר המעגל מהרדיוס שלו?", a: "2", exp: "הקוטר חוצה את המעגל מצד לצד דרך המרכז, ולכן הוא מורכב בדיוק משני רדיוסים (גדול פי 2)." },
+                { q: "כתבו באנגלית את השם של המספר הקבוע 3.14...", a: "pi", exp: "המונח המתמטי הוא 'pi'. המילה 'pie' באנגלית פירושה מאפה או עוגה!" },
+                { q: "איך נקרא קו הגבול החיצוני שמקיף את העיגול?", a: "היקף", exp: "אורך הקו החיצוני הסוגר את העיגול נקרא תמיד היקף המעגל." },
+                { q: "אם למעגל יש קוטר של 10 ס\"מ, מהו ההיקף שלו מבוטא באמצעות pi? (כתבו בסגנון: 5pi)", a: "10pi", exp: "הנוסחה להיקף היא קוטר כפול פאי (C = π × d). היות והקוטר هو 10, התשובה היא 10pi." },
+                { q: "אם רדיוס המעגל הוא 3 ס\"מ, מהו השטח שלו מבוטא באמצעות pi? (כתבו בסגנון: 12pi)", a: "9pi", exp: "נוסחת השטח היא פאי כפול רדיוס בריבוע (A = π × r²). הרדיוס הוא 3, ו-3 בריבוע זה 9, לכן נקבל 9pi." },
+                { q: "אם היקף מעגל הוא 20pi מטרים, מהו הקוטר שלו?", a: "20", exp: "לפי הנוסחה C = π × d, אם ההיקף שווה ל-20pi, הרי שהקוטר d חייב להיות 20." },
+                { q: "אם היקף מעגל הוא 16pi ס\"מ, מהו הרדיוס שלו?", a: "8", exp: "ההיקף הוא 2 × π × r. אם 2r שווה 16, נחלק ב-2 ונקבל שהרדיוס הוא 8." },
+                { q: "נכון או לא נכון: למгש פיצה ענק ולמטבע קטן יש בדיוק את אותו ערך של פאי.", a: "נכון", exp: "נכון מאוד! פאי הוא יחס קבוע שאינו משתנה לעולם, ללא קשר לגודל המעגל." },
+                { q: "מתקדם: אם רדיוס של מעגל מבוטא כ-3x, כיצד נבטא את הקוטר שלו? (כתבו בסגנון: 2x)", a: "6x", type: "advanced", exp: "הקוטר הוא תמיד פי 2 מהרדיוס, לכן נכפיל את הביטוי ב-2: לקבלת 6x." },
+                { q: "מתקדם: אם רדיוס המעגל הוא 2x והיקפו 12pi, מהו ערכו של x?", a: "3", type: "advanced", exp: "ההיקף הוא 2 × π × r. נציב r=2x ונקבל 4xπ = 12π. נחלק ב-4π ונקבל x = 3." },
+                { q: "מתקדם: ריבוע בעל אורך צלע 2x. בתוכו חסום מעגל הנוגע בכל ארבע הצלעות. בטא את רדיוס המעגל באמצעות x.", a: "x", type: "advanced", exp: "אורך צלע הריבוע (2x) שווה בדיוק לקוטר המעגל החסום. הרדיוס הוא חצי מהקוטר, ולכן חצי מ-2x הוא x." },
+                { q: "מתקדם: שטח עיגול הוא 49pi. מהו היקפו מבוטא באמצעות pi? (כתבו בסגנון: 5pi)", a: "14pi", type: "advanced", exp: "אם השטח הוא 49pi, אז רדיוס בריבוע הוא 49, כלומר הרדיוס r=7. נציב בנוסחת ההיקף 2 × π × 7 ונקבל 14pi." },
+                { q: "מתקדם: אם בעיגול מסוים השטח חлקי ההיקף שווה ל-5, מהו רדיוס המעגל?", a: "10", type: "advanced", exp: "ביטוי השטח חלקי ההיקף מצטמצם ל- r/2. אם r/2 = 5, נכפיל ב-2 ונקבל שהרדיוס הוא 10." },
+                { q: "מתקדם: רדיוס מעגל גדל מ-r ל-r + 3. בכמה יגדל ההיקף שלו? (בטא באמצעות pi, למשל: 2pi)", a: "6pi", type: "advanced", exp: "ההיקף המקורי הוא 2πr. ההיקף החדש הוא 2π(r+3) שהם 2πr + 6π. השינוי/התוספת היא בדיוק 6pi." },
+                { q: "מתקדם: אם שטח עיגול שווה מספרית להיקפו, מהו רדיוס המעגל?", a: "2", type: "advanced", exp: "נשווה את הנוסחאות: π × r² = 2 × π × r. נצמצם את פאי ואת r אחד משני האגפים ונקבל r = 2." },
+                { q: "מתקדם: אם ביטוי הקוטר של מעגל הוא 4x - 6, כיצד נבטא את הרדיוס שלו? (כתבו בסגנון: 5x-2)", a: "2x-3", type: "advanced", exp: "הרדיוס הוא חצי מהקוטר. נחלק את שני האיברים ב-2 ונקבל: 2x - 3." },
+                { q: "מתקדם: שביל ברוחב 2 מקיף בריכה עגולה ברדיוס r. מהו רדיוס המעגל החיצוני הכולל?", a: "r+2", type: "advanced", exp: "הרדיוס החיצוני מורכב מרדיוס הבריכה עצמה ועוד רוחב השביל שמתווסף אליו, כלומר r + 2." },
+                { q: "מתקדם: אם שטח עיגול הוא 64pi, מהו קוטרו?", a: "16", type: "advanced", exp: "השטח הוא 64pi, לכן r² = 64 והרדיוס r = 8. הקוטר כפול מהרדיוס, ולכן הוא 16." }
+            ]
+        },
+        ar: {
+            dir: 'rtl',
+            title: "سحر الدوائر",
+            subtitle: "اكتشف أسرار العالم المستدير!",
+            quizTitle: "اختبر معلوماتك!",
+            quizIntro: "الحاسبات ممنوعة! بمجرد التحقق من الإجابة سيتم قفل السؤال، فكر جيداً قبل الإرسال!",
+            checkBtn: "تحقق من الإجابة",
+            checkAllBtn: "تحقق من جميع الأسئلة واقفل",
+            scoreMsg: "🎉 اكتمل الاختبار! درجتك: ",
+            advBadge: "تحدي الجبر للمرحلة الإعدادية",
+            historyTitle: "📜 التاريخ واختراع العجلة",
+            historyBody: "منذ زمن بعيد، صنع الناس في بلاد ما بين النهرين أول عجلة خشبية ومن هنا تغير التاريخ البشري تماماً وسهّل نقل البضائع وبناء الحضارات.",
+            motivationTitle: "💡 لماذا يجب أن تتقن علم الدوائر؟",
+            motivationBody: "الدوائر أشكال ذات قوى خارقة! يستخدم مصممو ألعاب الفيديو رياضيات الدوائر لحساب حركة القفز بسلاسة، ويستخدمها علماء الفضاء لإطلاق الأقمار الصناعية في مدارات مثالية.",
+            piTitle: "🥧 كيف نحصل على الرقم باي (π)؟",
+            piBody: "عندما تقسم محيط أي دائرة على قطرها، ستحصل دائماً على نفس النتيجة: حوالي 3.14159... نسمي هذا الرقم الثابت السحري باي (pi). وتذكر أنه يكتب بالإنجليزية Pi وليس Pie!",
+            formulasTitle: "📐 القوانين الرياضية",
+            formulasBody: "لنفرض أن <b>r</b> هو نصف القطر، و <b>d</b> هو القطر كاملًا (d = 2r):",
+            formCirc: "محيط الدائرة: C = 2 × π × r  (أو  C = π × d)",
+            formArea: "مساحة الدائرة: A = π × r²",
+            correctPrefix: "🎉 إجابة صحيحة! ",
+            incorrectPrefix: "❌ ليس تماماً. ",
+            lowScoreFeedback: "لا تقلق! اقرأ الشرح أعلاه وحاول مرة أخرى لتحسين درجتك.",
+            midScoreFeedback: "جهد طيب! راجع قواعد القطر والباي لتحصل على درجة أعلى في المرة القادمة.",
+            highScoreFeedback: "ممتاز! أنت بطل حقيقي في الدوائر!",
+            questions: [
+                { q: "إذا كان نصف قطر دائرة 4 سم، فما هو قطرها؟", a: "8", exp: "بما أن القطر يساوي ضعف نصف القطر (d = 2 × r)، إذن 2 × 4 = 8 سم." },
+                { q: "إذا كان قطر دائرة 14 مترًا، فما هو نصف قطرها？", a: "7", exp: "نصف القطر هو نصف طول القطر (r = d / 2). إذن 14 / 2 = 7 أمتار." },
+                { q: "كم مرة يكون قطر الدائرة أكبر مقارنة بنصف قطرها?", a: "2", exp: "يمر القطر عبر المركز بالكامل من الطرف إلى الطرف الآخر، وبالتالي فهو يتكون من قطعتين من نصف القطر (أكبر بمرتين)." },
+                { q: "اكتب بالإنجليزية اسم الرمز المستخدم للتعبير عن الرقم 3.14...", a: "pi", exp: "المصطلح الرياضي الصحيح هو 'pi'. كلمة 'pie' تعني فطيرة!" },
+                { q: "ماذا يسمى السياج الخارجي أو المحيط بالدائرة؟", a: "المحيط", exp: "الخط الخارجي الذي يحدد الدائرة بالكامل يسمى دائماً المحيط." },
+                { q: "إذا كان قطر الدائرة 10 سم، فما محيطها بدلالة pi؟ (اكتب على غرار: 5pi)", a: "10pi", exp: "قانون المحيط هو القطر مضروباً في باي (C = π × d)، وبما أن القطر 10، النتيجة هي 10pi." },
+                { q: "إذا كان نصف قطر دائرة 3 سم، فما مساحتها بدلالة pi؟ (اكتب على غرار: 12pi)", a: "9pi", exp: "قانون المساحة هو باي مضروباً في مربع نصف القطر (A = π × r²). نصف القطر 3 ومربعه 9، إذن الإجابة 9pi." },
+                { q: "إذا كان محيط دائرة هو 20pi متراً، فما قطرها؟", a: "20", exp: "من القانون C = π × d، إذا كان المحيط 20pi، فإن القطر d يجب أن يكون 20." },
+                { q: "إذا كان محيط دائرة هو 16pi سم، فما نصف قطرها؟", a: "8", exp: "المحيط يساوي 2 × π × r. إذا كان 2r يساو؜ي 16، نقسم على 2 فيكون نصف القطر 8." },
+                { q: "صح أم خطأ: بيتزا دائرية عملاقة وعملة معدنية صغيرة لهما نفس قيمة باي تماماً.", a: "صح", exp: "صحيح! قيمة باي ثابتة لجميع الدوائر في الكون مهما اختلف حجمها." },
+                { q: "متقدم: إذا كان نصف قطر الدائرة يعبر عنه بـ 3x، فكيف نعبر عن القطر؟ (اكتب على غرار: 2x)", a: "6x", type: "advanced", exp: "القطر دائماً ضعف نصف القطر، لذا نضرب التعبير في 2: 2 × 3x = 6x." },
+                { q: "متقدم: إذا كان نصف قطر دائرة هو 2x ومحيطها 12pi، فما قيمة x؟", a: "3", type: "advanced", exp: "المحيط هو 2 × π × r. بالتعويض نجد أن 4xπ = 12π، وبقسمة الطرفين على 4π نجد أن x = 3." },
+                { q: "متقدم: مربع طول ضلعه 2x. وضعت دائرة بالداخل تلمس أضلاعه الأربعة. اكتب نصف قطر الدائرة بدلالة x.", a: "x", type: "advanced", exp: "طول ضلع المربع (2x) يساوي تماماً قطر الدائرة المحصورة بداخله. ونصف القطر هو نصف القطر كاملًا، أي نصف الـ 2x وهو x." },
+                { q: "متقدم: مساحة دائرة هي 49pi. ما هو محيطها بدلالة pi؟ (اكتب على غرار: 5pi)", a: "14pi", type: "advanced", exp: "بما أن المساحة 49pi، إذن مربع نصف القطر هو 49، أي أن r=7. وبنعويضها في قانون المحيط نجد أن 2 × π × 7 = 14pi." },
+                { q: "متقدم: إذا كانت المساحة تقسيم المحيط يساوي 5 لدائرة معينة، فما هو نصف قطرها؟", a: "10", type: "advanced", exp: "ناتج قسمة المساحة على المحيط يختصر إلى r/2. فإذا كان r/2 = 5، نضرب في 2 لنجد أن r = 10." },
+                { q: "متقدم: زاد نصف قطر دائرة من r إلى r + 3. بمقدار كم يزداد محيطها؟ (اكتب بدلالة pi، مثل 2pi)", a: "6pi", type: "advanced", exp: "المحيط القديم 2πr والمحيط الجديد هو (2π(r+3 أي 2πr + 6π. مقدار الزيادة هو 6pi." },
+                { q: "متقدم: إذا كانت مساحة دائرة تساوي محيطها عدديًا، فما هو نصف قطرها؟", a: "2", type: "advanced", exp: "بمساواة القانونين: π × r² = 2 × π × r. باختصار π و r من الطرفين، يتبقى r = 2." },
+                { q: "متقدم: إذا كان تعبير القطر هو 4x - 6، فكيف نعبر عن نصف القطر؟ (اكتب على غرار: 5x-2)", a: "2x-3", type: "advanced", exp: "نصف القطر هو نصف القطر كاملًا. نقسم كلا الحدين على 2: فيصبح التعبير 2x - 3." },
+                { q: "متقدم: ممر عرضه 2 يحيط ببركة دائرية نصف قطرها r. ما هو نصف قطر الدائرة الخارجية؟", a: "r+2", type: "advanced", exp: "نصف القطر الخارجي يبدأ من المركز ويمتد عبر البركة (r) ثم الممر (2)، فيصبح الإجمالي r + 2." },
+                { q: "متقدم: إذا كانت مساحة الدائرة 64pi، فما هو قطرها؟", a: "16", type: "advanced", exp: "المساحة 64pi تعني أن r² = 64 ومنها نصف القطر r = 8. وبما أن القطر ضعف نصف القطر، إذن القطر 16." }
+            ]
+        },
+        ru: {
+            dir: 'ltr',
+            title: "Магия Круга",
+            subtitle: "Раскройте тайны круглого мира!",
+            quizTitle: "Проверьте свои знания!",
+            quizIntro: "Калькуляторы запрещены! Как только вы проверите ответ, поле заблокируется, так что думайте внимательно!",
+            checkBtn: "Проверить",
+            checkAllBtn: "Проверить все вопросы и запереть",
+            scoreMsg: "🎉 Тест завершен! Ваш результат: ",
+            advBadge: "Алгебраический вызов",
+            historyTitle: "📜 История и колесо",
+            historyBody: "Примерно в 3500 году до нашей эры в Месопотамии вырезали первое деревянное колесо. Вдруг перевозить грузы стало легко! Эта простая форма полностью изменила историю.",
+            motivationTitle: "🚀 Почему тебе нужно подружиться с кругами?",
+            motivationBody: "Круг — это фигура с суперспособностями! Создатели видеоигр используют математику круга, чтобы рассчитывать взрывы, а ученые запускают спутники на орбиты.",
+            piTitle: "🥧 Как получается Число Пи (π)?",
+            piBody: "Если разделить длину окружности любого предмета на его диаметр, ответ ВСЕГДА будет одинаковым: около 3.14159... Мы называем это число Пи (pi). Помните, на английском пишется Pi, а не Pie!",
+            formulasTitle: "📐 Формулы",
+            formulasBody: "Пусть <b>r</b> — радиус (от центра до края), а <b>d</b> — диаметр (через весь круг, d = 2r):",
+            formCirc: "Длина окружности: C = 2 × π × r  (или  C = π × d)",
+            formArea: "Площадь круга: A = π × r²",
+            correctPrefix: "🎉 Правильно! ",
+            incorrectPrefix: "❌ Не совсем так. ",
+            lowScoreFeedback: "Не переживай! Прочитай текст выше и попробуй снова, чтобы улучшить результат.",
+            midScoreFeedback: "Хорошая попытка! Повтори правила Пи и диаметра, чтобы получить оценку выше в следующий раз.",
+            highScoreFeedback: "Отлично! Ты настоящий Магистр Кругов!",
+            questions: [
+                { q: "Если радиус круга равен 4 см, чему равен его диаметр?", a: "8", exp: "Так как диаметр в два раза больше радиуса (d = 2 × r), мы получаем 2 × 4 = 8 см." },
+                { q: "Если диаметр круга равен 14 метрам, чему равен его радиус?", a: "7", exp: "Радиус — это половина диаметра (r = d / 2). Значит, 14 / 2 = 7 метров." },
+                { q: "Во сколько раз диаметр круга больше его радиуса?", a: "2", exp: "Диаметр проходит через центр от края до края, поэтому он состоит ровно из двух радиусов." },
+                { q: "Напишите латинскими буквами английское название символа для числа 3.14...", a: "pi", exp: "Правильный термин — 'pi'. Слово 'pie' переводится с английского как пирог!" },
+                { q: "Как называется периметр круга?", a: "длина окружности", exp: "Общая длина границы круга называется длиной окружности." },
+                { q: "Если диаметр круга 10 см, чему равна длина окружности через π? (Пример формата: 5pi)", a: "10pi", exp: "Формула длины окружности: C = π × d. Так как d = 10, ответ равен 10pi." },
+                { q: "Если радиус круга равен 3 см, чему равна его площадь через π? (Пример формата: 12pi)", a: "9pi", exp: "Формула площади: A = π × r². Радиус равен 3, а 3 в квадрате (3 × 3) — это 9. Получаем 9pi." },
+                { q: "Если длина окружности равна 20π метров, чему равен диаметр?", a: "20", exp: "По формуле C = π × d, если длина окружности равна 20π, то диаметр d должен быть равен 20." },
+                { q: "Если длина окружности равна 16π см, чему равен радиус?", a: "8", exp: "Длина окружности равна 2 × π × r. Если 2r = 16, то разделив на 2, мы получаем радиус 8." },
+                { q: "Верно или неверно: у огромной пиццы и у маленькой монетки абсолютно одинаковое число Пи.", a: "верно", exp: "Верно! Число Пи одинаково для абсолютно любого круга во Вселенной." },
+                { q: "Продвинутый: Если радиус круга равен 3x, выразите его диаметр. (Пример формата: 2x)", a: "6x", type: "advanced", exp: "Диаметр всегда в 2 раза больше радиуса. Значит, 2 × 3x = 6x." },
+                { q: "Продвинутый: Если радиус круга равен 2x, а длина окружности равна 12π, чему равен x?", a: "3", type: "advanced", exp: "Длина окружности: 2 × π × r. Подставим r = 2x и получим 4xπ = 12π. Значит, 4x = 12, откуда x = 3." },
+                { q: "Продвинутый: Квадрат имеет сторону 2x. Внутрь вписан круг, касающийся всех 4 сторон. Выразите радиус через x.", a: "x", type: "advanced", exp: "Сторона квадрата (2x) равна диаметру вписанного круга. Радиус — это половина диаметра, то есть половина от 2x, что равно x." },
+                { q: "Продвинутый: Площадь круга равна 49π. Чему равна длина окружности через π? (Пример формата: 5pi)", a: "14pi", type: "advanced", exp: "Если площадь равна 49π, то r² = 49, а радиус r = 7. Подставив в формулу длины окружности 2 × π × 7, получаем 14pi." },
+                { q: "Продвинутый: Если Площадь разделить на Длину окружности и получить 5, чему равен радиус?", a: "10", type: "advanced", exp: "Отношение площади к длине окружности упрощается до r / 2. Если r / 2 = 5, то радиус r равен 10." },
+                { q: "Продвинутый: Радиус круга увеличился с r до r + 3. На сколько увеличилась длина окружности? (выразите через π, Пример формата: 2pi)", a: "6pi", type: "advanced", exp: "Старая длина: 2πr. Новая: 2π(r + 3) = 2πr + 6π. Длина увеличилась ровно на 6pi." },
+                { q: "Продвинутый: Если площадь круга численно равна длине его окружности, чему равен радиус?", a: "2", type: "advanced", exp: "Приравняем формулы: π × r² = 2 × π × r. Разделив обе части на π и на r, получим r = 2." },
+                { q: "Продвинутый: Если выражение для диаметра круга равно 4x - 6, как выразить его радиус? (Пример формата: 5x-2)", a: "2x-3", type: "advanced", exp: "Радиус равен половине диаметра. Делим оба члена на 2: (4x / 2) - (6 / 2) = 2x - 3." },
+                { q: "Продвинутый: Дорожка шириной 2 окружает пруд радиусом r. Чему равен радиус внешнего круга?", a: "r+2", type: "advanced", exp: "Внешний радиус складывается из радиуса самого пруда (r) плюс ширины дорожки (2), получая r + 2." },
+                { q: "Продвинутый: Если площадь круга равна 64π, чему равен его диаметр?", a: "16", type: "advanced", exp: "Площадь 64π означает, что r² = 64, следовательно, радиус r = 8. Диаметр вдвое больше радиуса: 2 × 8 = 16." }
+            ]
+        }
+    };
+
+    let currentLang = 'he'; // Set Hebrew as default
+
+    function switchLang(lang) {
+        currentLang = lang;
+        const lData = data[lang];
+        
+        document.body.className = lData.dir;
+        document.getElementById('main-title').innerText = lData.title;
+        document.getElementById('main-subtitle').innerText = lData.subtitle;
+        document.getElementById('quiz-title').innerText = lData.quizTitle;
+        document.getElementById('quiz-intro').innerText = lData.quizIntro;
+        document.getElementById('btn-check-all').innerText = lData.checkAllBtn;
+        document.getElementById('score-summary').innerText = '';
+
+        document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+        const targetBtn = document.getElementById(`btn-${lang}`);
+        if(targetBtn) targetBtn.classList.add('active');
+
+        let htmlContent = `
+            <div class="content-section">
+                <h2>${lData.historyTitle}</h2>
+                <p>${lData.historyBody}</p>
+            </div>
+            <div class="content-section">
+                <h2>${lData.motivationTitle}</h2>
+                <p>${lData.motivationBody}</p>
+            </div>
+            <div class="content-section">
+                <h2>${lData.piTitle}</h2>
+                <p>${lData.piBody}</p>
+            </div>
+            <div class="content-section">
+                <h2>${lData.formulasTitle}</h2>
+                <p>${lData.formulasBody}</p>
+                <div class="formula-box">${lData.formCirc}</div>
+                <div class="formula-box">${lData.formArea}</div>
+            </div>
+        `;
+        document.getElementById('content-area').innerHTML = htmlContent;
+
+        let quizHtml = '';
+        lData.questions.forEach((q, index) => {
+            let badge = q.type === 'advanced' ? `<span class="badge">${lData.advBadge}</span><br>` : '';
+            let advClass = q.type === 'advanced' ? 'advanced' : '';
+            quizHtml += `
+                <div class="question-card ${advClass}">
+                    ${badge}
+                    <strong>${index + 1}. ${q.q}</strong>
+                    <br>
+                    <input type="text" id="q-${index}" placeholder="...">
+                    <button class="action-btn" id="btn-single-${index}" style="padding:4px 10px; font-size:0.85rem;" onclick="checkSingle(${index})">${lData.checkBtn}</button>
+                    <div class="feedback-box" id="feedback-${index}"></div>
+                </div>
+            `;
+        });
+        document.getElementById('quiz-questions').innerHTML = quizHtml;
+    }
+
+    function checkSingle(index, silent = false) {
+        const inputEl = document.getElementById(`q-${index}`);
+        const feedbackEl = document.getElementById(`feedback-${index}`);
+        const singleBtn = document.getElementById(`btn-single-${index}`);
+        
+        if (!inputEl || inputEl.disabled) return inputEl ? inputEl.dataset.wasCorrect === 'true' : false;
+
+        const userAnswer = inputEl.value.trim().toLowerCase().replace(/\s+/g, '');
+        const questionObj = data[currentLang].questions[index];
+        const primaryAns = questionObj.a.toLowerCase().replace(/\s+/g, '');
+
+        let isCorrect = (userAnswer === primaryAns);
+        
+        if (!silent) {
+            // Lock inputs instantly so student cannot fix it after checking
+            inputEl.disabled = true;
+            if(singleBtn) singleBtn.disabled = true;
+
+            if (isCorrect) {
+                feedbackEl.innerText = data[currentLang].correctPrefix + questionObj.exp;
+                feedbackEl.className = "feedback-box correct";
+            } else {
+                feedbackEl.innerText = data[currentLang].incorrectPrefix + questionObj.exp;
+                feedbackEl.className = "feedback-box incorrect";
+            }
+        }
+        
+        inputEl.dataset.wasCorrect = isCorrect ? 'true' : 'false';
+        return isCorrect;
+    }
+
+    function checkAll() {
+        let correctCount = 0;
+        const total = data[currentLang].questions.length;
+        
+        for (let i = 0; i < total; i++) {
+            let isCorrect = checkSingle(i, false);
+            if (isCorrect) correctCount++;
+        }
+
+        let percentage = Math.round((correctCount / total) * 100);
+        let appreciation = "";
+        
+        // Dynamically adjust appreciation message to avoid saying "great job" on very low scores
+        if (percentage >= 85) {
+            appreciation = data[currentLang].highScoreFeedback;
+        } else if (percentage >= 40) {
+            appreciation = data[currentLang].midScoreFeedback;
+        } else {
+            appreciation = data[currentLang].lowScoreFeedback;
+        }
+        
+        document.getElementById('score-summary').innerText = `${data[currentLang].scoreMsg} ${correctCount} / ${total} (${percentage}%) - ${appreciation}`;
+        document.getElementById('btn-check-all').disabled = true;
+    }
+
+    // Force initialization with Hebrew as default
+    window.onload = function() {
+        switchLang('he');
+    };
+</script>
+
+</body>
+</html>
